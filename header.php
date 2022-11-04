@@ -15,7 +15,6 @@
                <li><a href="index.php"><span class="glyphicon glyphicon-home"></span> Home</a></li>
              </ul>
            </div><!-- end navbar collapse -->
-         
         </nav>
       </div>
     </div>  <!-- end navbar -->
