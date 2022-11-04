@@ -12,17 +12,6 @@ $result = $db->query("SELECT LocationName FROM `travelimagelocations` WHERE Imag
 $location = $result->fetch();
 $result = $db->query("SELECT AVG(Rating) as RatingAvg, COUNT(Rating) as Votes FROM `travelimagerating` WHERE ImageID=$id");
 $rating = $result->fetch();
-
-
-
-if(isset($_POST['submit'])){
-  $db->beginTransaction(); 
-  $statement = $db->prepare($sql); 
-  $statement->bindValue(1, $_GET['ImageID']); 
-  $statement->bindValue(2, $_GET['Rating']); 
-  $statement->execute(); 
-  $db->commit();
-}
 ?>
 
 <!DOCTYPE html>
@@ -118,12 +107,12 @@ if(isset($_POST['submit'])){
                 <li class="list-group-item"><strong class="text-primary"><?php echo $rating['RatingAvg'] ?>/5</strong><?php echo " [".$rating['Votes']." votes]" ?></li>
                 <li class="list-group-item">
                   <!-- Voting -->
-                  <form action="image.php" method="get" oninput="x.value=' ' + rng.value + ' '">
+                  <form action="vote.php" method="get" oninput="x.value=' ' + rng.value + ' '">
                     <div class="form-group text-center">
                       <output id="x" for="rng"> 3 </output> <span class="glyphicon glyphicon-thumbs-up"></span> <br>
                       <input type="range" id="rng" name="points" min="1" max="5" step="1">
                       <!-- The value of the hiddem input field is the ImageID -->
-                      <input type="hidden" name="id" value="ImageID">
+                      <input type="hidden" name="id" value=<?php echo $id ?>>
                     </div>
                     <div class="form-group text-center">
                       <button type="submit" class="btn btn-info"><span class="glyphicon glyphicon-ok"></span> Vote!</button>
