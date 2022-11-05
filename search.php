@@ -1,11 +1,26 @@
 <?php
 session_start();
+require_once("dbconnections.php");
 
-if(isset($_GET['search'])){
-  $phrase = $_GET['search'];
-  $posts = $db->query("SELECT * FROM `travelpost` WHERE Message LIKE %ipsum%");
+$phrase = $_GET['search'] ?? '';
+$postIDs = (array) null;
+$postTitles = (array) null;
+$postMsg = (array) null;
+
+$searchMode = 'Message'; // Default to message
+if (isset($_GET['filter']) && $_GET['filter'] == "title")
+{
+  $searchMode = 'Title';
 }
 
+if(!empty($_GET['search'])){
+  $posts = $db->query("SELECT * FROM `travelpost` WHERE $searchMode LIKE '%$phrase%'");
+  while ($row = $posts->fetch()){
+    $postIDs[] = $row['PostID'];
+    $postTitles[] = $row['Title'];
+    $postMsg[] = $row['Message'];
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -53,41 +68,47 @@ if(isset($_GET['search'])){
      <!-- Customer panel  -->
      <div class="panel panel-danger spaceabove">           
        <div class="panel-heading"><h3>Search</h3></div>
-        <div class="panel-body">
-          <form>
-            <div class="form-group">
-              <input type="search" name="search" class="form-control">
+       <div class="panel-body">
+        <form>
+          <div class="form-group">
+            <input type="search" name="search" class="form-control">
+          </div>
+          <div class="radio">
+            <label><input type="radio" name="filter" value="title" checked> Find in Post Title</label><br/>
+            <lable> <input type="radio" name="filter" value="content"> Find in Post Content</label><br/>
             </div>
-            <div class="radio">
-              <label><input type="radio" name="filter" value="title" checked> Find in Post Title</label><br/>
-              <lable> <input type="radio" name="filter" value="content"> Find in Post Content</label><br/>
-              </div>
-              <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span> Search</button>
+            <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span> Search</button>
           </form>
         </div>
       </div>  
       <!-- Search results go HERE -->
+      
         <div class="panel panel-danger spaceabove">           
          <div class="panel-heading"><h4>Search results</h4></div>
          <div class="panel-body">
-
           <!-- Show the posts found in the search using this panel (one panel for each result) -->
-          <?php
-            while($row=$posts->fetch()){
-    
-          ?>
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h4><a href="post_single.php?id=1"><?php echo $row['Title'] ?></a></h4>
+      <?php 
+        $size = sizeof($postIDs) ?? 0;
+        if ($size == 0)
+        { //<!-- If no results where found show this instead -->
+          echo "<p>No results for search term <strong>".$phrase."</strong></p>";
+        }
+        else 
+        {
+          for ($x = 0; $x < $size; $x++)
+          {
+            echo "
+            <div class='panel panel-default'>
+              <div class='panel-heading'>
+                <h4><a href='post_single.php?id=$postIDs[$x]'>$postTitles[$x]</a></h4>
               </div>
-              <div class="panel-body">
-                <?php echo $row['Message'] ?>
+              <div class='panel-body'>
+                $postMsg[$x]
               </div>
-            </div>
-          <?php } ?>
-          <!-- If no results where found show this instead -->
-          <p>No results for search term <strong> SEARCH TERM </strong></p>
-
+            </div>";
+          }
+        }
+      ?>
         </div>
       </div>
   </div>  <!-- end main content column -->
@@ -104,5 +125,7 @@ if(isset($_GET['search'])){
    <script src="bootstrap3_bookTheme/assets/js/jquery.js"></script>
    <script src="bootstrap3_bookTheme/dist/js/bootstrap.min.js"></script>
    <script src="bootstrap3_bookTheme/assets/js/holder.js"></script>
+
+<?php $db = null; ?>
  </body>
  </html>
